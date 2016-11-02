@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    //
     Button btnInit,
             btn1, btn2, btn3, btnPlus,
             btn4, btn5, btn6, btnMinus,
@@ -73,14 +74,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    @Override
-    public void onClick(View v) {
+    public boolean clickBtnNums(View v) {
         for (Button btnNum : btnNums) {
             if (v == btnNum) {
                 String accumulateStr = tvNum2.getText().toString();
                 if (accumulateStr.length() >= 6) {
                     Toast.makeText(this, "6자가 넘네", Toast.LENGTH_SHORT).show();
-                    return;
+                    return false;
                 }
                 String nowInputStr = ((Button) v).getText().toString();
                 tvNum2.setText(accumulateStr + nowInputStr);
@@ -89,16 +89,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     tvNum1.setText("");
                     tvSymbol.setText("");
                 }
-                return;
+                return false;
             }
         }
+        return true;
+    }
+
+    public boolean clickBtnOper(View v) {
         for (Button btnOper : btnOpers)
             if (v == btnOper) {
                 tvNum1.setText(tvNum2.getText().toString());
                 tvNum2.setText("");
                 tvSymbol.setText(btnOper.getText().toString());
-                return;
+                return false;
             }
+        return true;
+    }
+
+    @Override
+    public void onClick(View v) {
+        boolean isBtnNums = clickBtnNums(v);
+        if (!isBtnNums) return;
+        //
+        boolean isBtnOper = clickBtnOper(v);
+        if (!isBtnOper) return;
         //
         if (v == btnInit) {
             tvNum1.setText("");
@@ -115,10 +129,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             double resultValue = 0;
             String inputNum1 = tvNum1.getText().toString();
             String inputNum2 = tvNum2.getText().toString();
+            //
             if (inputNum1.length() <= 0 || inputNum2.length() <= 0) {
                 Toast.makeText(this, "잘못 입력", Toast.LENGTH_SHORT).show();
                 return;
             }
+            //
             double num1 = Double.parseDouble(inputNum1);
             double num2 = Double.parseDouble(inputNum2);
             if (symbol.equals(btnPlus.getText().toString()))
@@ -129,29 +145,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 resultValue = num1 / num2;
             else if (symbol.equals(btnMult.getText().toString()))
                 resultValue = num1 * num2;
-            Log.d("d", "resultValue : " + resultValue);
-//            String resultPrint = String.format("%.3f", resultValue);
-//            if (resultValue % 1 == 0) {
-//                resultPrint = resultPrint.substring(0, resultPrint.indexOf("."));
-//            }
-
-            String resultPrint = removeZeros(resultValue);
-            // resultPrint = String.format("%.3f", resultValue);
-
-            resultPrint = String.valueOf(resultValue);
+            //
+            String resultPrint = removeDecimalZeros(resultValue);
+            //
+            int dotPos = resultPrint.indexOf(".");
+            if (dotPos > 0
+                    && (resultPrint.length() - dotPos) > 3) {
+                resultPrint = resultPrint.substring(0, resultPrint.indexOf(".") + 3) + "e";
+            }
+            //
             tvNum1.setText(resultPrint);
             tvNum2.setText("");
             isEqual = true;
         }
     }
 
-    public String removeZeros(double dblValue) {
-
-        if(dblValue == (long) dblValue)
-            return String.format("%d",(long)dblValue);
+    public String removeDecimalZeros(double dblValue) {
+        Log.d("d", new Exception().getStackTrace()[0].getMethodName());
+        if (dblValue == (long) dblValue)
+            return String.format("%d", (long) dblValue);
         else
             return String.format("%s", dblValue);
-
     }
-
 }
